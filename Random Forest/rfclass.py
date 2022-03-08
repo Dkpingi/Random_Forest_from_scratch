@@ -198,7 +198,6 @@ class RandomForestRegressor():
         for result in results:
             while not result.ready():
                 pass
-                #time.sleep(0.1); print(".", end=' ')
         
         for i, tree in enumerate(self.trees):
             self.trees[i] = results[i].get()
