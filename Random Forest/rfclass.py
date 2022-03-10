@@ -27,6 +27,7 @@ class Node():
         self.children = []
         self.parent = None
         self.n_features = None
+        self.feature_importances_ = None
     
         self.max_features = max_features 
         
@@ -43,7 +44,7 @@ class Node():
     def build_tree(self, X, y, min_samples_split = 2):
         min_samples_split = max(1, min_samples_split)
         if self.children != [] or len(self.ids) < min_samples_split:
-            return 0
+            return None
         
         l_ids = []
         r_ids = []
@@ -68,8 +69,11 @@ class Node():
                     self.split_feature = criterion_id
                     l_ids = l_ids_temp
                     r_ids = r_ids_temp
-        
+
+
+        self.feature_importances_ = np.zeros(X.shape[1])
         if len(l_ids) > 0 and len(r_ids) > 0:
+            self.feature_importances_[self.split_feature] += self.criterion(y, self.ids) - self.split_impurity_reduction
             self.children.append(Node(X, y, ids = l_ids, criterion = self.crit, 
                                       max_depth = self.max_depth, depth = self.depth + 1, max_features = self.max_features))
             self.children.append(Node(X, y, ids = r_ids, criterion = self.crit,
@@ -80,7 +84,10 @@ class Node():
                 
             if self.depth < self.max_depth:
                 for child in self.children:
-                    child.build_tree(X, y, min_samples_split = min_samples_split)
+                    self.feature_importances_ += child.build_tree(X, y, min_samples_split = min_samples_split)
+                
+        return self.feature_importances_
+                    
     
     def evaluate_node(self, X):
         y = []
@@ -101,15 +108,6 @@ class Node():
 
         variance_reduction = (len(l_ids)/len(ids))*self.criterion(y, l_ids) + (len(r_ids)/len(ids))*self.criterion(y, r_ids)
         return variance_reduction
-    
-    def get_feature_importances(self):
-        if self.children != []:
-            self.importances[self.split_feature] += self.split_impurity_reduction
-            for child in self.children:
-                self.importances += child.get_feature_importances()
-            return self.importances
-        else:
-            return 0.0
         
     def ccp_prune(self, y, ccp_alpha):
         if not len(self.children) == 0:
@@ -221,7 +219,7 @@ class RandomForestRegressor():
         '''
         #Get importances from each tree
         importances = np.zeros(self.n_features)
-        for idx, tree in enumerate(self.trees):
-            importances += tree.root.get_feature_importances()       
+        for tree in self.trees:
+            importances += tree.root.feature_importances_
         importances /= np.sum(importances)
         return importances
