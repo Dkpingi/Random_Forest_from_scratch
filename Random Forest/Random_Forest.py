@@ -27,7 +27,7 @@ if __name__ == '__main__': #so pathos does not throw a fit
     model = RandomForestRegressor(n_estimators = 10)
     model.fit(X_train, y_train)
 
-    plt.plot(model.get_feature_importances())
+    plt.plot(model.feature_importances_)
 
     model = sklearn.ensemble.RandomForestRegressor(n_estimators = 10)
     model.fit(X_train, y_train)
@@ -42,8 +42,8 @@ if __name__ == '__main__': #so pathos does not throw a fit
     
     dataset = datasets[1]
 
-    params = ['ccp_alpha', 'n_estimators']
-    ranges = [np.linspace(0, 200.0, 10), range(1,10)]
+    params = ['min_samples_leaf', 'min_samples_split',  'ccp_alpha', 'n_estimators']
+    ranges = [range(2, 100, 10), range(2, 100, 10), np.linspace(0, 200.0, 10), range(1,10)]
     for param_name, value_range in zip(params, ranges):
         plot_dict_my = benchmark_params(RandomForestRegressor, dataset, param_name, value_range, 'mymodel')
         plot_dict_sk = benchmark_params(sklearn.ensemble.RandomForestRegressor, dataset, param_name, value_range, 'sklearn')
