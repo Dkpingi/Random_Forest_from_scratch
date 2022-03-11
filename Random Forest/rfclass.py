@@ -1,7 +1,9 @@
 
 import numpy as np
-from pathos.multiprocessing import ProcessingPool
-import time 
+from pathos.multiprocessing import ProcessingPool as Pool
+import time
+import ray
+
 
 class Node():
     '''
@@ -131,7 +133,8 @@ class Node():
             N += 1
 
         return err, N
-    
+
+@ray.remote
 class RegressionTree():
     def __init__(self, max_depth, criterion, ccp_alpha, min_samples_split, min_samples_leaf, max_features):
         self.root = None
@@ -151,11 +154,17 @@ class RegressionTree():
         
     def predict(self, X):
         return self.root.evaluate_node(X)
+
+    def return_self(self):
+        return self
+
+    def get_feature_importances(self):
+        return self.root.feature_importances_
     
 
     
 class RandomForestRegressor():
-    def __init__(self, n_estimators = 10, max_depth = 4, criterion = 'squared_error', ccp_alpha = 0.0, max_features = None, min_samples_split = 2, min_samples_leaf = 2):
+    def __init__(self, n_estimators = 10, max_depth = 4, criterion = 'squared_error', ccp_alpha = 0.0, max_features = None, min_samples_split = 2, min_samples_leaf = 2, n_jobs = 1):
         if isinstance(max_features, int):
             self.max_features = lambda _ : max_features
         elif isinstance(max_features, float):
@@ -171,34 +180,42 @@ class RandomForestRegressor():
         
         self.trees = []
         for _ in range(n_estimators):
-            self.trees.append(RegressionTree(max_depth = max_depth, criterion = criterion, ccp_alpha = ccp_alpha,  
+            self.trees.append(RegressionTree.remote(max_depth = max_depth, criterion = criterion, ccp_alpha = ccp_alpha,  
                                              min_samples_split = min_samples_split, min_samples_leaf = min_samples_leaf, 
                                              max_features = self.max_features))
         self.n_features = None
+        self.n_jobs = n_jobs
+        ray.init(num_cpus=self.n_jobs, ignore_reinit_error = True)
 
     def fit(self, X, y):
         '''
         Fit each tree with sampled features and bootstrap samples.
         '''
         self.n_features = X.shape[1]
+        self.X = X
+        self.y = y
         
-        pool = ProcessingPool(nodes=len(self.trees))
-        results = []
-        for tree in self.trees:
-            n_samples = np.random.choice(list(range(X.shape[0])), size = int(X.shape[0]/10.0))
-            
-            X_fit = X[n_samples]
-            y_fit = y[n_samples]
-            results.append(pool.apipe(tree.fit, X_fit, y_fit))
+        n_samples = [np.random.choice(list(range(X.shape[0])), size = int(X.shape[0]/10.0)) for tree in self.trees]
+        for actor, samples in zip(self.trees, n_samples):
+            actor.fit.remote(X[samples], y[samples])
 
-        for result in results:
-            while not result.ready():
-                pass
         
-        for i, tree in enumerate(self.trees):
-            self.trees[i] = results[i].get()
+        #Xlist = [X[samples] for samples in n_samples]
+        #Ylist = [y[samples] for samples in n_samples]
+        #results = pool.map(self.fit_helper, self.trees, n_samples)
+        results = ray.get([actor.return_self.remote() for actor in self.trees])
 
+        #while not results.ready():
+        #    time.sleep(0.2)
+        #print(results.get())
+        print(self.trees)
+        #self.trees = results#.get()
+        print(self.trees)
         self.feature_importances_ = self.get_feature_importances()
+    
+     
+    def fit_helper(self, tree, ids):
+        return tree.fit(self.X[ids], self.y[ids])
 
     def predict(self, X):
         '''
@@ -206,18 +223,10 @@ class RandomForestRegressor():
         '''
         prediction = 0.0
 
-        pool = ProcessingPool(nodes=len(self.trees))
-        results = []
-        for tree in self.trees:
-            results.append(pool.apipe(tree.predict, X))
-        
-        for result in results:
-            while not result.ready():
-                pass
-        
-        for i, tree in enumerate(self.trees):
-            prediction += results[i].get()
-
+        #for actor in self.trees:
+        #    actor.predict.remote(X)
+        print(self.trees)
+        prediction = np.sum(ray.get([actor.predict.remote(X) for actor in self.trees]))
         prediction /= len(self.trees)
         return prediction
     
@@ -227,8 +236,11 @@ class RandomForestRegressor():
         normalized by the number of times the feature is used for the trees in the forest.
         '''
         #Get importances from each tree
+        
+        importance_arr = ray.get([actor.get_feature_importances.remote() for actor in self.trees])
+
         importances = np.zeros(self.n_features)
-        for tree in self.trees:
-            importances += tree.root.feature_importances_
-        importances /= np.sum(importances)
+        for imp in importance_arr:
+            importances += imp
+        importances /= np.sum(importances + 1e-16)
         return importances
