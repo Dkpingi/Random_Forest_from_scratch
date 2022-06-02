@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 #python package files
 dist/*
+*.egg-info
