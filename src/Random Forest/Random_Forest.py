@@ -35,6 +35,7 @@ if __name__ == '__main__':
     plt.show()
 
     plot_dict_my = benchmark_datasets(RandomForestRegressor, datasets, 'mymodel')
+    print(plot_dict_my)
     plot_dict_sk = benchmark_datasets(sklearn.ensemble.RandomForestRegressor, datasets, 'sklearn')
 
     plot_benchmark([plot_dict_my, plot_dict_sk])

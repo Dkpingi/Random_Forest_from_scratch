@@ -59,7 +59,7 @@ def plot_benchmark(myruntimes, myerrors, skruntimes, skerrors):
     plt.plot(skruntimes, label = 'skmodel')
     plt.plot(myruntimes, label = 'mymodel')
     plt.legend()
-    plt.show()
+    plt.savefig('./figures/')
 
     plt.title('Train/Test Error')
     plt.plot(skerrors['train'], label = 'skmodeltrain')
