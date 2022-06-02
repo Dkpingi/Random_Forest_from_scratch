@@ -26,16 +26,21 @@ if __name__ == '__main__':
     model = RandomForestRegressor(n_estimators = 10)
     model.fit(X_train, y_train)
 
-    plt.plot(model.feature_importances_)
+    plt.plot(model.feature_importances_, label = 'mymodel')
 
     model = sklearn.ensemble.RandomForestRegressor(n_estimators = 10)
     model.fit(X_train, y_train)
 
-    plt.plot(model.feature_importances_)
-    plt.show()
+    plt.plot(model.feature_importances_, label = 'sklearn')
+    plt.title('Feature Importances')
+    plt.ylabel('Feature Importance')
+    plt.xlabel('FeatureID')
+    plt.legend()
+    
+    plt.savefig(f'figures/feature_importances.png')
+    plt.close()
 
     plot_dict_my = benchmark_datasets(RandomForestRegressor, datasets, 'mymodel')
-    print(plot_dict_my)
     plot_dict_sk = benchmark_datasets(sklearn.ensemble.RandomForestRegressor, datasets, 'sklearn')
 
     plot_benchmark([plot_dict_my, plot_dict_sk])

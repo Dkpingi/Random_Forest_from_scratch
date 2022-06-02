@@ -9,7 +9,7 @@ def benchmark_datasets(model_class, datasets, label):
     Benchmarks the model for the given dataset for a single parameter across multiple values.
     Uses default values for all other parameters. Returns both runtimes and predictive performances.
     '''  
-    plot_dict = {'x_values' : [], 'runtime' : [], 'train_err' : [], 'val_err' : [], 'label' : label, 'xlabel' : '#Dataset'}
+    plot_dict = {'x_values' : [], 'runtime' : [], 'train_err' : [], 'val_err' : [], 'label' : label, 'xlabel' : 'numDataset'}
     for i, dataset in enumerate(datasets):
         X, y = dataset['data'], dataset['target']
         X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -56,8 +56,6 @@ def benchmark_params(model_class, dataset, param_name, param_values, label):
 
         plot_dict['runtime'].append(t1 - t0)
         plot_dict['x_values'].append(param_value)
-        print(model.predict(X_train))
-        print(y_train)
         plot_dict['train_err'].append(mape(model.predict(X_train), y_train))
         plot_dict['val_err'].append(mape(model.predict(X_val), y_val))
     
@@ -78,7 +76,8 @@ def plot_benchmark(plot_dict_list):
         plt.xlabel(xlabel)
         plt.legend()
 
-    plt.show()
+    plt.savefig(f'figures/{xlabel}_vs_runtime.png')
+    plt.close()
 
     for plot_dict in plot_dict_list:
         xvalues = plot_dict['x_values']
@@ -94,4 +93,5 @@ def plot_benchmark(plot_dict_list):
         plt.xlabel(xlabel)
         plt.legend()
     
-    plt.show()
+    plt.savefig(f'figures/{xlabel}_vs_error.png')
+    plt.close()
