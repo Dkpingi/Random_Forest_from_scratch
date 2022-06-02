@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 
-if __name__ == '__main__': #so pathos does not throw a fit
+if __name__ == '__main__':
 
     datasets = [fetch_california_housing(), load_diabetes(), load_boston()]
 

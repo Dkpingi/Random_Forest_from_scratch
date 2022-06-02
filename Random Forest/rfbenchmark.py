@@ -25,6 +25,8 @@ def benchmark_datasets(model_class, datasets, label):
 
         plot_dict['runtime'].append(t1 - t0)
         plot_dict['x_values'].append(i)
+        print(model.predict(X_train))
+        print(y_train)
         plot_dict['train_err'].append(mape(model.predict(X_train), y_train))
         plot_dict['val_err'].append(mape(model.predict(X_val), y_val))
     
@@ -56,6 +58,8 @@ def benchmark_params(model_class, dataset, param_name, param_values, label):
 
         plot_dict['runtime'].append(t1 - t0)
         plot_dict['x_values'].append(param_value)
+        print(model.predict(X_train))
+        print(y_train)
         plot_dict['train_err'].append(mape(model.predict(X_train), y_train))
         plot_dict['val_err'].append(mape(model.predict(X_val), y_val))
     
