@@ -9,6 +9,6 @@ As a final point, I want to analyze how sklearns implementation differs from min
 # Parameters
 We test the behaviour of both the train and validation error as well as the runtime of the models given different model finetuning parameters:
 
-![This is an image](/figures/ccp_alpha.png)
+![This is an image](figures/ccp_alpha.png)
 
 ## Differences
