@@ -2,14 +2,17 @@
 # Random Forest from Scratch
 This project tries to recreate the random forest regressor model of sklearn as a programming exercise. 
 The created model is then benchmarked together with the standard regressor from sklearn to see how succeessful the implementation was in comparison.
-As a final point, I want to analyze how sklearns implementation differs from mine and how that results in the benchmark differences.
 
 # Benchmarks
 
 # Datasets
-First we compare the base performance of both models with three datasets:
+First we compare the base performance of both models with three datasets from the sklearn library, namely the california housing market dataset, the diabetes dataset and the boston house price dataset:
 ![This is an image](figures/numDataset_vs_error.png)
 ![This is an image](figures/numDataset_vs_runtime.png)
+
+The sklearn implementation tends to have lower train and test errors, except for one small exception.
+Training times are similar for small datasets, but for the first dataset which is much larger my model is much slower.
+This is probably due to a lack of parallelization of my model.
 
 # Finetuning Parameters
 We test the behaviour of both the train and validation error as well as the runtime of the models given different model finetuning parameters, while keeping all else equal:
@@ -49,12 +52,13 @@ n_estimators refers to the number of trees that are averaged over in the random 
 The number of estimators reduces train and validation error for both models, but sklearn doesn't have much of a penalty for increasing estimators, while my model's runtime explodes.
 This is very likely due to lack of parallelization on the part of my model, while sklearn naturally does have parallelization.
 
-## n_jobs
-![This is an image](figures/n_jobs_vs_error.png)
-![This is an image](figures/n_jobs_vs_runtime.png)
-
 # Determining feature importances:
 ![This is an image](figures/feature_importances.png)
 
+The feature importances determined by Sklearns model are roughly similar than the one determined by my model in that the two most important features are the same, 
+but apart from that the feature importances are mostly different.
 
-## Differences
+
+# Conclusion:
+My implementation produces a rough approximation of sklearns implementation, but it runs much slower and has lower training and validation errors. 
+The former is clearly due to the lack of parallelization in my implementation, the latter is more complicated, but sklearn's implementation is of course much more sophisticated so it's not surprising.
