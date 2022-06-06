@@ -11,7 +11,7 @@ First we compare the base performance of both models with three datasets from th
 ![This is an image](figures/numDataset_vs_runtime.png)
 
 The sklearn implementation tends to have lower train and test errors, except for one small exception.
-Training times are similar for small datasets, but for the first dataset which is much larger my model is much slower.
+Training times are similar for small datasets, but for the first dataset, which is much larger, my model is much slower.
 This is probably due to a lack of parallelization of my model.
 
 # Finetuning Parameters
@@ -21,7 +21,7 @@ We test the behaviour of both the train and validation error as well as the runt
 ![This is an image](figures/ccp_alpha_vs_error.png)
 ![This is an image](figures/ccp_alpha_vs_runtime.png)
 
-cost-complexity pruning prunes the Trees in order to reduce complexity, which hopefully leads to less overfitting.
+Cost-Complexity Pruning prunes the trees in order to reduce complexity, which hopefully leads to less overfitting.
 My model doesn't seem to benefit very much from the pruning, however it also fits a lot less to the training set than the sklearn model, so of course there won't be a benefit.
 Sklearn's ccp increases training error by a lot, while very slightly increasing validation performance.
 Runtime is unaffected for sklearn, while my model has lower training time for aggressive pruning, which doesn't make any sense to me.

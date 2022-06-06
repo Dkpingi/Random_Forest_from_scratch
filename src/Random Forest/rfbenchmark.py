@@ -44,8 +44,6 @@ def benchmark_params(model_class, dataset, param_name, param_values, label):
     X_train = scaler.fit_transform(X_train)
     X_val = scaler.transform(X_val)
     
-    xvalues = []
-    runtimes = []
     plot_dict = {'x_values' : [], 'runtime' : [], 'train_err' : [], 'val_err' : [], 'label' : label, 'xlabel' : param_name}
     for param_value in param_values:
         param_dict = {param_name : param_value}
@@ -69,7 +67,6 @@ def plot_benchmark(plot_dict_list):
         val_err = plot_dict['val_err']
         label = plot_dict['label']
         xlabel = plot_dict['xlabel']
-
 
         plt.plot(xvalues, runtime, label = label)
         plt.title('Training Time')
